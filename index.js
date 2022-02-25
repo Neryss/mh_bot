@@ -6,7 +6,6 @@ require('dotenv').config();
 module.exports = client = new Client({ intents: [Intents.FLAGS.GUILDS, 'GUILD_MESSAGES'] });
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-console.log(commandFiles);
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
 	commands.push(command.data.toJSON());
@@ -24,8 +23,7 @@ client.on('ready', () => {
 	(async () => {
 		try {
 			await rest.put(
-				// Routes.application
-				Routes.applicationGuildCommands(process.env.CLIENT_ID),
+				Routes.applicationCommands(process.env.CLIENT_ID),
 				{ body: commands },
 			);
 			console.log("Commands registered");
@@ -33,4 +31,22 @@ client.on('ready', () => {
 			console.log(err);
 		}
 	})();
+})
+
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand())
+		return ;
+	const command = client.commands.get(interaction.commandName);
+	if (!command)
+		return;
+	try
+	{
+		await command.execute(interaction);
+	} catch (err) {
+		console.error(err);
+		await interaction.reply({
+			content: "An error has occured!",
+			ephemeral: true
+		});
+	}
 })

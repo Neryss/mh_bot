@@ -10,4 +10,7 @@ module.exports = {
 			option.setName('name')
 				.setDescription('monster to search for')
 				.setRequired(true)),
+	async execute(interaction) {
+		interaction.reply("yikes it works mate");
+	}
 }
