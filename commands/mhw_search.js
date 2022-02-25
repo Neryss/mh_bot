@@ -62,8 +62,10 @@ function	search_db(data, name, interaction)
 {
 	return new Promise(resolve => {
 		var found = 0;
+		console.log(data.length);
 		for (i = 0; i < data.length; i++)
 		{
+			console.log(data[i].name);
 			if (data[i].name.toLowerCase() == name)
 			{
 				match_found(found, data, i);
@@ -79,11 +81,12 @@ function	search_db(data, name, interaction)
 function	treat_data(name, interaction)
 {
 	return new Promise(resolve => {
-		fs.readFile("../db/mhw_db.json", async function (err, data) {
+		fs.readFile("./db/mhw_db.json", async function (err, data) {
 			try
 			{
 				data = JSON.parse(data);
 				console.log("Treating data...");
+				resolve(await search_db(data, name, interaction));
 
 			} catch (error) {
 				console.error(error);
@@ -101,10 +104,11 @@ module.exports = {
 				.setDescription('monster to search for')
 				.setRequired(true)),
 	async execute(interaction) {
+		await interaction.deferReply();
 		const name = interaction.options.getString('name');
 		for (i = 0; i < name.length; i++)
 			name[i].toLowerCase();
-		await (treat_data(name, interaction));
+		await treat_data(name, interaction);
 		if (embed)
 			await interaction.editReply({embeds: [embed]});
 		else
