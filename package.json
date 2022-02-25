@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Neryss/mh_bot#readme",
   "dependencies": {
+    "@discordjs/rest": "^0.3.0",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0"
   }
