@@ -1,8 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { match } = require('assert');
-const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
+const mh = require('./mhw_search');
 let embed;
+const discord = require('discord.js')
+const { MessageEmbed } = require("discord.js");
+const fs = require('fs');
 
 function	put_star(nb)
 {
@@ -14,7 +15,7 @@ function check_ailments(weak)
 	if (weak.element == "poison" || weak.element == "sleep"
 	|| weak.element == "paralysis" || weak.element == "blast"
 	|| weak.element == "stun")
-		return (true);
+	return (true);
 	return (false);
 }
 
@@ -36,8 +37,10 @@ function	match_found(found, data, i)
 			}
 		}
 		e_inflicts = data[i].ailments;
+		console.log(`data : ${data[i].ailments}`);
+		console.log(`value : ${e_inflicts}`);
 		for (var j = 0; j < e_inflicts.length; j++)
-			weakness.addField(e_inflicts[j].name, "<:skull:880625774091178085>", true);
+			weakness.addField(e_inflicts[j], "<:skull:880625774091178085>", true);
 		weakness.addField("\u200b", "----------------------------------------------------------")
 			.addField("Resist to : ", "(resistances or immunities of the monster)")
 		e_resist = data[i].resistances;
@@ -58,17 +61,16 @@ function	match_found(found, data, i)
 	});
 }
 
-function	search_db(data, name, interaction)
+async function	treat_data(data, name, interaction)
 {
-	return new Promise(resolve => {
+	return new Promise (resolve => {
 		var found = 0;
-		console.log(data.length);
-		for (i = 0; i < data.length; i++)
+		for (var i = 0; i < data.length; i++)
 		{
 			if (data[i].name.toLowerCase() == name)
 			{
 				match_found(found, data, i);
-				break ;
+				break;
 			}
 		}
 		if (!found)
@@ -77,18 +79,19 @@ function	search_db(data, name, interaction)
 	})
 }
 
-function	treat_data(name, interaction)
+function	rise_search(name, interaction)
 {
 	return new Promise(resolve => {
-		fs.readFile("./db/mhw_db.json", async function (err, data) {
+		console.log("Now searching through Rise...")
+		fs.readFile("./db/rise_monster_db.json", async function (err, data) {
 			try
 			{
 				data = JSON.parse(data);
-				console.log("Treating data...");
-				resolve(await search_db(data, name, interaction));
-
-			} catch (error) {
-				console.error(error);
+				resolve(await treat_data(data, name, interaction));
+			}
+			catch(e)
+			{
+				console.log(e);
 			}
 		})
 	})
@@ -96,21 +99,21 @@ function	treat_data(name, interaction)
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName("mhw")
-		.setDescription("Search for a MHW monster stats")
+		.setName("rise")
+		.setDescription("Search for a MH Rise monster stats")
 		.addStringOption(option =>
 			option.setName('name')
-				.setDescription('monster to search for')
-				.setRequired(true)),
+			.setDescription("monster to search for")
+			.setRequired(true)),
 	async execute(interaction) {
 		await interaction.deferReply();
 		const name = interaction.options.getString('name');
-		for (i = 0; i < name.length; i++)
+		for (var i = 0; i < name.length; i++)
 			name[i].toLowerCase();
-		await treat_data(name, interaction);
+		await rise_search(name, interaction);
 		if (embed)
 			await interaction.editReply({embeds: [embed]});
 		else
-			await interaction.editReply("Monster not found!");
+			await interaction.editReply("Monster not found...");
 	}
 }
