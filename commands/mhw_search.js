@@ -28,6 +28,7 @@ function	match_found(found, data, i)
 		.addField("Inflicts : ", "(ailments inflicted by the monster)");
 		if (data[i].icon)
 		{
+			//	TODO add monster icons localy
 			try {
 				weakness.setThumbnail("http://neryss.pw/icons/mhw-" + data[i].name.toLowerCase() + "_icon.png");
 			}
