@@ -19,9 +19,9 @@ function check_ailments(weak)
 	return (false);
 }
 
-function	match_found(found, data, i)
+async function	match_found(found, data, i)
 {
-	return new Promise (resolve => {
+	return new Promise (async resolve => {
 		found++;
 		weakness = new MessageEmbed()
 		.setColor("#ff0080")
@@ -58,24 +58,23 @@ function	match_found(found, data, i)
 			if (e_weak[j].stars > 1 && check_ailments(e_weak[j]))
 				weakness.addField(e_weak[j].element + " : ", put_star(e_weak[j].stars), true);
 		embed = weakness;
+		resolve(0);
 	});
 }
 
 async function	treat_data(data, name, interaction)
 {
-	return new Promise (resolve => {
+	return new Promise (async resolve => {
 		var found = 0;
 		for (var i = 0; i < data.length; i++)
 		{
 			if (data[i].name.toLowerCase() == name)
 			{
-				match_found(found, data, i);
+				resolve (await match_found(found, data, i));
 				break;
 			}
 		}
-		if (!found)
-			resolve(1);
-		resolve(0);
+		resolve(1);
 	})
 }
 
@@ -110,8 +109,8 @@ module.exports = {
 		const name = interaction.options.getString('name');
 		for (var i = 0; i < name.length; i++)
 			name[i].toLowerCase();
-		await rise_search(name, interaction);
-		if (embed)
+		let temp = await rise_search(name, interaction);
+		if (!temp)
 			await interaction.editReply({embeds: [embed]});
 		else
 			await interaction.editReply("Monster not found...");
