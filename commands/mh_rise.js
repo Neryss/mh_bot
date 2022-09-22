@@ -1,9 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const mh = require('./mhw_search');
-let embed;
-const discord = require('discord.js')
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs');
+let embed;
 
 function	put_star(nb)
 {
@@ -19,16 +17,16 @@ function check_ailments(weak)
 	return (false);
 }
 
-async function	match_found(found, data, i)
+async function	match_found(data, i)
 {
 	return new Promise (async resolve => {
-		found++;
 		weakness = new MessageEmbed()
 		.setColor("#ff0080")
 		.setTitle(data[i].name)
 		.addField("Inflicts : ", "(ailments inflicted by the monster)");
 		if (data[i].icon)
 		{
+			//	TODO: add monster icon
 			try {
 				weakness.setThumbnail("http://neryss.pw/icons/mhw-" + data[i].name.toLowerCase() + "_icon.png");
 			}
@@ -62,23 +60,18 @@ async function	match_found(found, data, i)
 	});
 }
 
-async function	treat_data(data, name, interaction)
+async function	treat_data(data, name)
 {
 	return new Promise (async resolve => {
-		var found = 0;
+		l_name = name.toLowerCase();
 		for (var i = 0; i < data.length; i++)
-		{
-			if (data[i].name.toLowerCase() == name.toLowerCase())
-			{
-				resolve (await match_found(found, data, i));
-				break;
-			}
-		}
+			if (data[i].name.toLowerCase() == l_name)
+				resolve (await match_found(data, i));
 		resolve(1);
 	})
 }
 
-function	rise_search(name, interaction)
+function	rise_search(name)
 {
 	return new Promise(resolve => {
 		console.log("Now searching through Rise...")
@@ -86,11 +79,12 @@ function	rise_search(name, interaction)
 			try
 			{
 				data = JSON.parse(data);
-				resolve(await treat_data(data, name, interaction));
+				resolve(await treat_data(data, name));
 			}
 			catch(e)
 			{
 				console.log(e);
+				resolve(2);
 			}
 		})
 	})
@@ -109,7 +103,7 @@ module.exports = {
 		const name = interaction.options.getString('name');
 		for (var i = 0; i < name.length; i++)
 			name[i].toLowerCase();
-		let temp = await rise_search(name, interaction);
+		let temp = await rise_search(name);
 		if (!temp)
 			await interaction.editReply({embeds: [embed]});
 		else
