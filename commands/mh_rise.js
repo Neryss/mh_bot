@@ -68,7 +68,7 @@ async function	treat_data(data, name, interaction)
 		var found = 0;
 		for (var i = 0; i < data.length; i++)
 		{
-			if (data[i].name.toLowerCase() == name)
+			if (data[i].name.toLowerCase() == name.toLowerCase())
 			{
 				resolve (await match_found(found, data, i));
 				break;
