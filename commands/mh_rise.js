@@ -24,7 +24,6 @@ async function	match_found(data, i)
 		.setColor("#ff0080")
 		.setTitle(data[i].name)
 		.addField("Inflicts : ", "(ailments inflicted by the monster)");
-		//	TODO: add monster icon
 		try {
 			weakness.setThumbnail("http://neryss.pw/icons/rise-" + data[i].name.toLowerCase().replaceAll(" ", "_") + "-icon.png");
 		}
