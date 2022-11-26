@@ -24,15 +24,12 @@ async function	match_found(data, i)
 		.setColor("#ff0080")
 		.setTitle(data[i].name)
 		.addField("Inflicts : ", "(ailments inflicted by the monster)");
-		if (data[i].icon)
-		{
-			//	TODO: add monster icon
-			try {
-				weakness.setThumbnail("http://neryss.pw/icons/mhw-" + data[i].name.toLowerCase() + "_icon.png");
-			}
-			catch (err) {
-				console.log("no thumbnail found for -" + data[i].name.toLowerCase() + "-!");
-			}
+		//	TODO: add monster icon
+		try {
+			weakness.setThumbnail("http://neryss.pw/icons/rise-" + data[i].name.toLowerCase().replaceAll(" ", "_") + "-icon.png");
+		}
+		catch (err) {
+			console.log("no thumbnail found for -" + data[i].name.toLowerCase() + "-!");
 		}
 		e_inflicts = data[i].ailments;
 		console.log(`data : ${data[i].ailments}`);
