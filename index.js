@@ -17,8 +17,13 @@ const { Routes } = require("discord-api-types/v9");
 
 client.login(process.env.DISCORD_TOKEN);
 client.on('ready', () => {
-	console.log("Logged in");
+	console.log(`Logged in`);
 	const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
+
+	(async () => {
+		await client.guilds.cache.get();
+		console.log("SIZE" + client.guilds.cache.size);
+	})();
 
 	(async () => {
 		try {
