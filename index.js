@@ -3,7 +3,7 @@ const fs = require('fs');
 const commands = [];
 require('dotenv').config();
 
-module.exports = client = new Client({ intents: [Intents.FLAGS.GUILDS, 'GUILD_MESSAGES'] });
+module.exports = client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
