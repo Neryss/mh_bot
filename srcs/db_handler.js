@@ -66,6 +66,8 @@ class   DbHandler
             monster_list = this.world_monsters;
         else if (game == RISE)
             monster_list = this.rise_monsters;
+        else if (game == "wilds")
+            monster_list = this.wilds_monsters
         for (const monster in monster_list)
             if (monster_list[monster].name.toLowerCase() == name.toLowerCase())
                 return(monster_list[monster]);
@@ -79,6 +81,8 @@ class   DbHandler
             monster_list = this.world_monsters;
         else if (game == RISE)
             monster_list = this.rise_monsters;
+        else if (game == "wilds")
+            monster_list = this.wilds_monsters;
         for (const monster in monster_list)
             if (monster_list[monster].id == id)
                 return(monster_list[monster]);
@@ -92,6 +96,7 @@ class   DbHandler
             {
                 this.world_monsters = await this.listFromDb("mhw_db.json");
                 this.rise_monsters = await this.listFromDb("rise_monster_db.json");
+                this.wilds_monsters = await this.listFromDb("wilds_monster_db.json");
                 resolve();
             }
             catch(error)
@@ -104,7 +109,7 @@ class   DbHandler
 
 async function main()
 {
-    new_db = new DbHandler("./db");
+    new_db = new DbHandler("./monster_hunter_db");
     try
     {
         await new_db.initDbs();
@@ -117,4 +122,6 @@ async function main()
     }
 }
 
-main();
+// main();
+
+module.exports = DbHandler;

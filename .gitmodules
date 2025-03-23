@@ -1,0 +1,3 @@
+[submodule "monster_hunter_db"]
+	path = monster_hunter_db
+	url = git@github.com:Neryss/monster_hunter_db.git
