@@ -1,80 +1,70 @@
-// const { Client, Collection, Intents } = require('discord.js');
-// const fs = require('fs');
-// const commands = [];
-// require('dotenv').config();
+const { Client, Collection, Intents } = require('discord.js');
+const fs = require('fs');
+require('dotenv').config();
+const { REST } = require('@discordjs/rest');
+const { Routes } = require("discord-api-types/v9");
+const DbHandler = require('./srcs/db_handler');
 
-// module.exports = client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-// client.commands = new Collection();
-// const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-// for (const file of commandFiles) {
-// 	const command = require(`./commands/${file}`);
-// 	commands.push(command.data.toJSON());
-// 	client.commands.set(command.data.name, command);
-// }
+const commands = [];
 
-// const { REST } = require('@discordjs/rest');
-// const { Routes } = require("discord-api-types/v9");
+async function main() {
+    try {
+        const mh_db = new DbHandler("./monster_hunter_db");
+        await mh_db.initDbs();
 
-// client.login(process.env.DISCORD_TOKEN);
-// client.on('ready', () => {
-// 	console.log(`Logged in`);
-// 	const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
+        console.log(mh_db.getMonsterByName("wilds", "Ajarakan"));
 
-// 	(async () => {
-// 		await client.guilds.cache.get();
-// 		console.log("SIZE" + client.guilds.cache.size);
-// 	})();
+        const client = new Client({
+            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
+        });
 
-// 	(async () => {
-// 		try {
-// 			await rest.put(
-// 				Routes.applicationCommands(process.env.CLIENT_ID),
-// 				{ body: commands },
-// 			);
-// 			console.log("Commands registered");
-// 		} catch (err) {
-// 			console.log(err);
-// 		}
-// 	})();
-// })
+        client.commands = new Collection();
 
-// client.on('interactionCreate', async interaction => {
-// 	if (!interaction.isCommand())
-// 		return ;
-// 	const command = client.commands.get(interaction.commandName);
-// 	if (!command)
-// 		return;
-// 	try
-// 	{
-// 		await command.execute(interaction);
-// 	} catch (err) {
-// 		console.error(err);
-// 		await interaction.reply({
-// 			content: "An error has occured!",
-// 			ephemeral: true
-// 		});
-// 	}
-// })
+        const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+        for (const file of commandFiles) {
+            const commandFactory = require(`./commands/${file}`);
+            const command = commandFactory(mh_db);
+            commands.push(command.data.toJSON());
+            client.commands.set(command.data.name, command);
+        }
 
-const { Client, GatewayIntentBits } = require('discord.js');
-const DB = require('./db');
-const commandFactory = require('./commands');
+        client.login(process.env.DISCORD_TOKEN);
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-const db = new DB(); // Create a single DB instance
-const commands = commandFactory(db); // Pass the DB instance to commands
+        client.once('ready', async () => {
+            console.log(`Logged in as ${client.user.tag}`);
 
-client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}`);
-});
+            const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
+            try {
+                await rest.put(
+                    Routes.applicationCommands(process.env.CLIENT_ID),
+                    { body: commands }
+                );
+                console.log("Commands registered successfully.");
+            } catch (err) {
+                console.error("Failed to register commands:", err);
+            }
+        });
 
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) return;
+        client.on('interactionCreate', async interaction => {
+            if (!interaction.isCommand()) return;
 
-    const command = commands.find(cmd => cmd.data.name === interaction.commandName);
-    if (command) {
-        await command.execute(interaction);
+            const command = client.commands.get(interaction.commandName);
+            if (!command) return;
+
+            try {
+                await command.execute(interaction);
+            } catch (err) {
+                console.error("Command execution error:", err);
+                await interaction.reply({
+                    content: "An error occurred while executing the command!",
+                    ephemeral: true
+                });
+            }
+        });
+
+    } catch (error) {
+        console.error("Error during bot startup:", error);
     }
-});
+}
 
-client.login('YOUR_BOT_TOKEN');
+main();

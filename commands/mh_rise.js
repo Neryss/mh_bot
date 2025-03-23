@@ -1,108 +1,110 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs');
-let embed;
 
-function	put_star(nb)
-{
-	return (Array(nb + 1).join("<:star:880281496315899955>"));
+function putStar(nb) {
+    return Array(nb + 1).join("<:star:880281496315899955>");
 }
 
-function check_ailments(weak)
-{
-	if (weak.element == "poison" || weak.element == "sleep"
-	|| weak.element == "paralysis" || weak.element == "blast"
-	|| weak.element == "stun")
-	return (true);
-	return (false);
+function checkAilments(weak) {
+    return ["poison", "sleep", "paralysis", "blast", "stun"].includes(weak.element);
 }
 
-async function	match_found(data, i)
-{
-	return new Promise (async resolve => {
-		weakness = new MessageEmbed()
-		.setColor("#ff0080")
-		.setTitle(data[i].name)
-		.addField("Inflicts : ", "(ailments inflicted by the monster)");
-		try {
-			weakness.setThumbnail("http://neryss.pw/icons/rise-" + data[i].name.toLowerCase().replaceAll(" ", "_") + "-icon.png");
-		}
-		catch (err) {
-			console.log("no thumbnail found for -" + data[i].name.toLowerCase() + "-!");
-		}
-		e_inflicts = data[i].ailments;
-		console.log(`data : ${data[i].ailments}`);
-		console.log(`value : ${e_inflicts}`);
-		for (var j = 0; j < e_inflicts.length; j++)
-			weakness.addField(e_inflicts[j], "<:skull:880625774091178085>", true);
-		weakness.addField("\u200b", "----------------------------------------------------------")
-			.addField("Resist to : ", "(resistances or immunities of the monster)")
-		e_resist = data[i].resistances;
-		for (var j = 0; j < e_resist.length; j++)
-			weakness.addField(e_resist[j].element, "<:shield:883134123898732554>", true);
-		weakness.addField("\u200b", "----------------------------------------------------------");
-		e_weak = data[i].weaknesses;
-		weakness.addField("Weaknesses :", "(absent elements = resist/no effects)");
-		for (var j = 0; j < e_weak.length; j++)
-			if (e_weak[j].stars > 1 && !check_ailments(e_weak[j]))
-				weakness.addField(e_weak[j].element + " : ", put_star(e_weak[j].stars), true);
-		weakness.addField('\u200b', '----------------------------------------------------------')
-		.addField("Ailments :", "(absent elements = resist/no effects)");
-		for (j = 0; j < e_weak.length; j++)
-			if (e_weak[j].stars > 1 && check_ailments(e_weak[j]))
-				weakness.addField(e_weak[j].element + " : ", put_star(e_weak[j].stars), true);
-		embed = weakness;
-		resolve(0);
-	});
+async function createEmbedFromMonster(monster) {
+    return new Promise((resolve) => {
+        let embed = new MessageEmbed()
+            .setColor("#ff0080")
+            .setTitle(monster.name);
+
+        // Inflicts
+        if (monster.ailments.length > 0) {
+            embed.addField("Inflicts:", "\u200b");
+            for (let ailment of monster.ailments) {
+                embed.addField(ailment.name || ailment, "<:skull:880625774091178085>", true);
+            }
+        }
+
+        // Resistances
+        if (monster.resistances.length > 0) {
+            embed.addField("\u200b", "\u200b");
+            embed.addField("Resistances:", "\u200b");
+            for (let res of monster.resistances) {
+                embed.addField(res.element, "<:shield:883134123898732554>", true);
+            }
+        }
+
+        // Weaknesses & Ailments
+        let weaknesses = [];
+        let ailments = [];
+
+        for (let weakness of monster.weaknesses) {
+            if (weakness.stars > 1) {
+                if (checkAilments(weakness)) {
+                    ailments.push(weakness);
+                } else {
+                    weaknesses.push(weakness);
+                }
+            }
+        }
+
+        if (weaknesses.length > 0) {
+            embed.addField("\u200b", "\u200b");
+            embed.addField("Weaknesses:", "\u200b");
+            for (let weak of weaknesses) {
+                embed.addField(weak.element, putStar(weak.stars), true);
+            }
+        }
+
+        if (ailments.length > 0) {
+            embed.addField("\u200b", "\u200b");
+            embed.addField("Ailments:", "\u200b");
+            for (let ail of ailments) {
+                embed.addField(ail.element, putStar(ail.stars), true);
+            }
+        }
+
+        resolve(embed);
+    });
 }
 
-async function	treat_data(data, name)
-{
-	return new Promise (async resolve => {
-		l_name = name.toLowerCase();
-		for (var i = 0; i < data.length; i++)
-			if (data[i].name.toLowerCase() == l_name)
-				resolve (await match_found(data, i));
-		resolve(1);
-	})
+async function wildsSearch(db, name) {
+    return new Promise((resolve, reject) => {
+        try {
+            const monster_info = db.getMonsterByName("wilds", name);
+            resolve(monster_info);
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
 
-function	rise_search(name)
-{
-	return new Promise(resolve => {
-		console.log("Now searching through Rise...")
-		fs.readFile("./db/rise_monster_db.json", async function (err, data) {
-			try
-			{
-				data = JSON.parse(data);
-				resolve(await treat_data(data, name));
-			}
-			catch(e)
-			{
-				console.log(e);
-				resolve(2);
-			}
-		})
-	})
-}
-
-module.exports = {
+module.exports = (db) => ({
 	data: new SlashCommandBuilder()
 		.setName("rise")
-		.setDescription("Search for a MH Rise monster stats")
+		.setDescription("Search for a MH: Rise monster stats")
 		.addStringOption(option =>
 			option.setName('name')
-			.setDescription("monster to search for")
-			.setRequired(true)),
+				.setDescription("Monster to search for")
+				.setRequired(true)
+		),
+
 	async execute(interaction) {
 		await interaction.deferReply();
-		const name = interaction.options.getString('name');
-		for (var i = 0; i < name.length; i++)
-			name[i].toLowerCase();
-		let temp = await rise_search(name);
-		if (!temp)
-			await interaction.editReply({embeds: [embed]});
-		else
-			await interaction.editReply("Monster not found...");
+		const name = interaction.options.getString('name').toLowerCase();
+
+		try {
+			const monster = db.getMonsterByName("rise", name);
+			console.log("Monster: ", JSON.stringify(monster, null, 4));
+
+			if (monster) {
+				const embed = await createEmbedFromMonster(monster);
+				await interaction.editReply({ embeds: [embed] });
+			} else {
+				await interaction.editReply("Monster not found...");
+			}
+		} catch (error) {
+			console.error("Error fetching monster:", error);
+			await interaction.editReply("An error occurred while searching for the monster.");
+		}
 	}
-}
+});

@@ -71,7 +71,7 @@ class   DbHandler
         for (const monster in monster_list)
             if (monster_list[monster].name.toLowerCase() == name.toLowerCase())
                 return(monster_list[monster]);
-        return("Monster not found!");
+        return(null);
     }
 
     getMonsterById(game, id)
@@ -86,7 +86,7 @@ class   DbHandler
         for (const monster in monster_list)
             if (monster_list[monster].id == id)
                 return(monster_list[monster]);
-        return("Monster not found!");
+        return(null);
     }
 
     initDbs()
@@ -115,6 +115,7 @@ async function main()
         await new_db.initDbs();
         console.log(new_db.getMonsterByName(WORLD, "Rajang"));
         console.log(new_db.getMonsterByName(RISE, "Mizutsune"));
+        console.log(new_db.getMonsterByName("wilds", "Ajarakan"))
     }
     catch(error)
     {

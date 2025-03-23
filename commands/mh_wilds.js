@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { match } = require('assert');
-const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
+const { MessageEmbed } = require("discord.js");
 
 function putStar(nb) {
     return Array(nb + 1).join("<:star:880281496315899955>");
@@ -71,7 +69,7 @@ async function createEmbedFromMonster(monster) {
 async function wildsSearch(db, name) {
     return new Promise((resolve, reject) => {
         try {
-            const monster_info = db.getMonsterByName("world", name);
+            const monster_info = db.getMonsterByName("wilds", name);
             resolve(monster_info);
         } catch (error) {
             reject(error);
@@ -80,32 +78,32 @@ async function wildsSearch(db, name) {
 }
 
 module.exports = (db) => ({
-	data: new SlashCommandBuilder()
-		.setName("world")
-		.setDescription("Search for a MH: World monster stats")
-		.addStringOption(option =>
-			option.setName('name')
-				.setDescription("Monster to search for")
-				.setRequired(true)
-		),
+    data: new SlashCommandBuilder()
+        .setName("wilds")
+        .setDescription("Search for a MH: Wilds monster stats")
+        .addStringOption(option =>
+            option.setName('name')
+                .setDescription("Monster to search for")
+                .setRequired(true)
+        ),
 
-	async execute(interaction) {
-		await interaction.deferReply();
-		const name = interaction.options.getString('name').toLowerCase();
+    async execute(interaction) {
+        await interaction.deferReply();
+        const name = interaction.options.getString('name').toLowerCase();
 
-		try {
-			const monster = db.getMonsterByName("world", name);
-			console.log("Monster: ", JSON.stringify(monster, null, 4));
+        try {
+            const monster = db.getMonsterByName("wilds", name);
+            console.log("Monster: ", JSON.stringify(monster, null, 4));
 
-			if (monster) {
-				const embed = await createEmbedFromMonster(monster);
-				await interaction.editReply({ embeds: [embed] });
-			} else {
-				await interaction.editReply("Monster not found...");
-			}
-		} catch (error) {
-			console.error("Error fetching monster:", error);
-			await interaction.editReply("An error occurred while searching for the monster.");
-		}
-	}
+            if (monster) {
+                const embed = await createEmbedFromMonster(monster);
+                await interaction.editReply({ embeds: [embed] });
+            } else {
+                await interaction.editReply("Monster not found...");
+            }
+        } catch (error) {
+            console.error("Error fetching monster:", error);
+            await interaction.editReply("An error occurred while searching for the monster.");
+        }
+    }
 });
