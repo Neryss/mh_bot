@@ -1,6 +1,9 @@
 # mh_bot
 Discord monster hunter bot
 
+This project is undergoing a "massive" rework along the whole database for the new game (Wilds), the currently deployed version for public discord usage is the reworked one, some things are missing (such as monsters pictures), and I didn't have much time to test errors etc... 
+If you see some, feel free to contact me or fill an issue!
+
 # Install and launch
 Since I'm not able to currently host the bot myself, you can clone this repository and use the bot without any issue!
 If you want to use it publicly and/or modify it, I would appreciate if you can credit me :D
@@ -14,11 +17,15 @@ After these steps, just run `node index.js` or you can use something such as Scr
 
 # MHW
 
-`/mhw <name>` will search through [MHW db](./db/mhw_db.json) for monsters stats. The db was taken from [MHW-api](https://docs.mhw-db.com/) and completed by myself for Iceborne.
+`/world <name>` will search through [MHW db](./monster_hunter_db/wilds_monster_db.json) for monsters stats. The db was taken from [MHW-api](https://docs.mhw-db.com/) and completed by myself for Iceborne.
 
 # MH: Rise
 
-`/rise <name>` will search through [RISE db](./db/rise_monster_db.json) for monsters stats. Db was made by myself, way less complete than the mhw one.
+`/rise <name>` will search through [RISE db](./monster_hunter_db/rise_monster_db.json) for monsters stats. Db was made by myself, way less complete than the mhw one.
+
+# MH: Wilds
+
+`/wilds <name>` will search through [WILDS db](./monster_hunter_db/wilds_monster_db.json)
 
 # Database
 
